@@ -1,0 +1,64 @@
+# SailPoint IdentityIQ: Joiner-Mover-Leaver (JML) Lifecycle Automation
+
+An enterprise-ready lifecycle orchestration pipeline configured natively within **SailPoint IdentityIQ (8.1)**. This project demonstrates automated user lifecycle transitions triggered from an authoritative HR flat-file data source.
+
+---
+
+## 👥 Lifecycle Simulation Matrix
+The framework tracks state mutations across 6 distinct personas to validate the automated event engine:
+
+| ID | Name | Department | Simulated State | Automation Trigger Action |
+| :--- | :--- | :--- | :--- | :--- |
+| **E001** | Alice Smith | HR | Active | Production Baseline Account Loading |
+| **E002** | Bob Jones | IT | Leaver | Automatic Cross-Application Access Revocation |
+| **E003** | Charlie Brown| Sales| Active | Production Baseline Account Loading |
+| **E004** | David Miller | IT | Mover | Department Change / Cross-App Delta Update |
+| **E005** | Emma Wilson | Finance| Leaver | Automatic Cross-Application Access Revocation |
+| **E006** | Frank Thomas | HR | Joiner | Automated Downstream Account Provisioning |
+
+---
+
+## 📁 Repository Structure
+- `/config` — Clean XML lifecycle objects exported directly from the SailPoint Debug Engine.
+- `/data` — `hr_source_data.csv` acting as the authoritative HR source system feed.
+- `/screenshots` — Visual system logs proving automation execution.
+
+---
+
+## 🛠️ Configuration & Implementation
+
+1. **Authoritative Feed Definition (`/config/HR_Source_System.xml`)**
+   - Establishes a native `DelimitedFile` connector mapping source attributes directly onto Identity Cubes using `EmployeeID` as the primary correlation key.
+
+2. **JML Lifecycle Triggers (`/config/JML_*_Event.xml`)**
+   - Configures native Identity Attribute Change event triggers that route identities to dedicated out-of-the-box business processes:
+     - **Joiner Event**: Fires the `Lifecycle Event - Joiner` workflow for immediate account creation.
+     - **Mover Event**: Captures department adjustments and invokes `Lifecycle Event - Manager Transfer`.
+     - **Leaver Event**: Catches status drops and targets the `Lifecycle Event - Leaver` workflow for rapid disablement.
+
+3. **Dynamic Hierarchy Resolver (`/config/JML_Manager_Correlation_Rule.xml`)**
+   - Utilizes a specialized BeanShell **Manager Correlation Rule** to dynamically evaluate supervisor text strings and auto-instantiate operational stub manager identities on-the-fly.
+
+---
+
+## 📊 Deployment Verification
+
+### 1. Authoritative Identity Onboarding
+Shows that all 6 personas are parsed and mapped accurately onto global system records.
+![Identity Warehouse Grid Layout](screenshots/01_identity_warehouse.png)
+
+### 2. Lifecycle Orchestration Mapping
+Confirms the architectural setup mapping the individual state triggers onto the corresponding business processes.
+![SailPoint Lifecycle Configuration UI](screenshots/02_lifecycle_events.png)
+
+### 3. Automated Event Execution History
+Definitive log trace confirming that the system captured the state mutation (Active to Leaver) and automatically executed the target workflow.
+![Identity History Audit Trail Trace](screenshots/03_past_identity_events.png)
+
+---
+
+## 🚀 Execution Sequence
+1. Import all XML configurations via the **SailPoint Debug Console** (`/debug`).
+2. Execute the **Account Aggregation Task** with the `Refresh managers` option selected.
+3. Execute the **Identity Refresh Task** ensuring both `Refresh identity attributes` and `Process events` are checked.
+4.
